@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Controls;
@@ -18,11 +18,11 @@ namespace WpfAnimatedGif
             _sourceDescriptor = DependencyPropertyDescriptor.FromProperty(Image.SourceProperty, typeof (Image));
         }
 
-        private readonly Image _image;
-        private readonly ObjectAnimationUsingKeyFrames _animation;
-        private readonly AnimationClock _clock;
-        private readonly ClockController _clockController;
-        
+        private Image _image;
+        private ObjectAnimationUsingKeyFrames _animation;
+        private AnimationClock _clock;
+        private ClockController _clockController;
+
         internal ImageAnimationController(Image image, ObjectAnimationUsingKeyFrames animation, bool autoStart)
         {
             _image = image;
@@ -34,9 +34,9 @@ namespace WpfAnimatedGif
 
             // ReSharper disable once PossibleNullReferenceException
             _clockController.Pause();
-            
+
             _image.ApplyAnimationClock(Image.SourceProperty, _clock);
-            
+
             if (autoStart)
                 _clockController.Resume();
         }
@@ -148,18 +148,24 @@ namespace WpfAnimatedGif
             GC.SuppressFinalize(this);
         }
 
+        bool isDisposed = false;
         /// <summary>
         /// Disposes the current object
         /// </summary>
         /// <param name="disposing">true to dispose both managed an unmanaged resources, false to dispose only managed resources</param>
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && !isDisposed)
             {
                 _image.BeginAnimation(Image.SourceProperty, null);
                 _animation.Completed -= AnimationCompleted;
                 _sourceDescriptor.RemoveValueChanged(_image, ImageSourceChanged);
                 _image.Source = null;
+                _animation = null;
+                _image = null;
+                _clock = null;
+                _clockController = null;
+                isDisposed = true;
             }
         }
     }
